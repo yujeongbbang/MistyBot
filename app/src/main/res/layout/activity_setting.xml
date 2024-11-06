@@ -38,13 +38,14 @@
             android:textSize="16sp" />
 
         <!-- 네모 박스 스타일의 EditText -->
+
         <EditText
             android:id="@+id/humidityInput"
             android:layout_width="120dp"
             android:layout_height="50dp"
-            android:layout_marginStart="20dp"
             android:background="@drawable/edit_text_background"
             android:gravity="center"
+            android:layout_marginStart="20dp"
             android:inputType="number"
             android:text="30" />
 
