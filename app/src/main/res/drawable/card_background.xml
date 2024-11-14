@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 그림자 효과 -->
+    <item android:right="2dp" android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#D3D3D3" /> <!-- 그림자 색상 (회색) -->
+            <corners android:radius="12dp" /> <!-- 둥근 모서리 -->
+        </shape>
+    </item>
+
+    <!-- 카드 본체 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#F2F2F2" /> <!-- 카드 배경 색상 -->
+            <corners android:radius="12dp" /> <!-- 둥근 모서리 -->
+        </shape>
+    </item>
+</layer-list>
