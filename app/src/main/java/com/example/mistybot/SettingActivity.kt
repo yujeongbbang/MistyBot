@@ -43,10 +43,6 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * TurtleBot으로 습도 값을 UDP를 통해 전송하는 함수
-     * @param humidity 전송할 습도 값
-     */
     private fun sendHumidityToTurtleBot(humidity: String) {
         CoroutineScope(Dispatchers.IO).launch {
             var socket: DatagramSocket? = null
