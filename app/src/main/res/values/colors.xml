@@ -4,4 +4,13 @@
     <color name="white">#FFFFFFFF</color>
     <color name="light_gray">#D3D3D3</color>
     <color name="colorPrimary">#4285F4</color>
+
+    <!-- 물의 양 색상 -->
+    <color name="waterLevelSufficient">#4CAF50</color> <!-- 초록색 -->
+    <color name="waterLevelInsufficient">#F44336</color> <!-- 빨간색 -->
+
+    <!-- 수질 색상 -->
+    <color name="waterQualityGood">#4CAF50</color> <!-- 초록색 -->
+    <color name="waterQualityFair">#FFEB3B</color> <!-- 노란색 -->
+    <color name="waterQualityPoor">#F44336</color> <!-- 빨간색 -->
 </resources>

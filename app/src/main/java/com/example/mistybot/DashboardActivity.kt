@@ -3,11 +3,11 @@ package com.example.mistybot
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,11 +29,12 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var humidityValue: TextView
     private lateinit var batteryValue: TextView
     private lateinit var settingsIcon: ImageView
-    private lateinit var autoButton: Button
+    private lateinit var waterLevelStatus: TextView
+    private lateinit var waterQualityStatus: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.dashboard)
+        setContentView(R.layout.activity_dashboard)
 
         // View 초기화
         mapImageView = findViewById(R.id.mapImageView)
@@ -41,7 +42,8 @@ class DashboardActivity : AppCompatActivity() {
         humidityValue = findViewById(R.id.humidityValue)
         batteryValue = findViewById(R.id.batteryValue)
         settingsIcon = findViewById(R.id.settingsIcon)
-        autoButton = findViewById(R.id.autoButton)
+        waterLevelStatus = findViewById(R.id.waterLevelStatus)
+        waterQualityStatus = findViewById(R.id.waterQualityStatus)
 
         // settingsIcon 클릭 시 SettingActivity로 이동
         settingsIcon.setOnClickListener {
@@ -49,14 +51,37 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // 버튼 클릭 리스너 설정
-        autoButton.setOnClickListener {
-            startAutoHumidification()
+        // 물의 양 상태
+        val waterLevel = "충분" // 실제 상태를 가져오는 로직 추가
+        if (waterLevel == "충분") {
+            waterLevelStatus.text = "충분"
+            waterLevelStatus.setTextColor(ContextCompat.getColor(this, R.color.waterLevelSufficient))
+        } else {
+            waterLevelStatus.text = "부족"
+            waterLevelStatus.setTextColor(ContextCompat.getColor(this, R.color.waterLevelInsufficient))
+        }
+
+        // 수질 상태
+        val waterQuality = "좋음" // 실제 상태를 가져오는 로직 추가
+        when (waterQuality) {
+            "좋음" -> {
+                waterQualityStatus.text = "좋음"
+                waterQualityStatus.setTextColor(ContextCompat.getColor(this, R.color.waterQualityGood))
+            }
+            "양호" -> {
+                waterQualityStatus.text = "양호"
+                waterQualityStatus.setTextColor(ContextCompat.getColor(this, R.color.waterQualityFair))
+            }
+            "나쁨" -> {
+                waterQualityStatus.text = "나쁨"
+                waterQualityStatus.setTextColor(ContextCompat.getColor(this, R.color.waterQualityPoor))
+            }
         }
 
         // 데이터 수신 시작
         receiveImageData()
         receiveSensorData()
+        receiveWaterQualityData()
     }
 
     private fun receiveImageData() {
@@ -121,18 +146,37 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-
-    // 자동 가습 시작하는 메서드
-    private fun startAutoHumidification() {
+    // 수위 및 수질 데이터 수신
+    private fun receiveWaterQualityData() {
         CoroutineScope(Dispatchers.IO).launch {
-            val command = "start_auto_humidification" // 자동 가습 명령 메시지
-            val response = UdpClient.sendMessage(command) // UdpClient를 사용하여 명령 전송
+            try {
+                val socket = DatagramSocket(RASPBERRY_PI_PORT)
+                val buffer = ByteArray(1024)
+                val packet = DatagramPacket(
+                    buffer,
+                    buffer.size,
+                    InetAddress.getByName(RASPBERRY_PI_IP),
+                    RASPBERRY_PI_PORT
+                )
 
-            withContext(Dispatchers.Main) {
-                if (response != null) {
-                    Toast.makeText(this@DashboardActivity, "자동 가습 프로세스 시작: $response", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@DashboardActivity, "자동 가습 프로세스 실패", Toast.LENGTH_SHORT).show()
+                while (true) {
+                    socket.receive(packet)
+                    val jsonData = String(packet.data, 0, packet.length).trim()
+
+                    val jsonObject = JSONObject(jsonData)
+                    val waterLevel = jsonObject.getString("water_level")
+                    val waterQuality = jsonObject.getString("water_quality")
+
+                    withContext(Dispatchers.Main) {
+                        waterLevelStatus.text = "$waterLevel%"
+                        waterQualityStatus.text = "$waterQuality%"
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@DashboardActivity, "수위/수질 데이터 수신 오류", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }

@@ -14,6 +14,7 @@ class DeviceSearchActivity : AppCompatActivity() {
 
     private lateinit var deviceStatus: TextView
     private lateinit var connectButton: Button
+    private lateinit var tempNavigateButton: Button // 임시 버튼 변수 추가
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,9 +22,18 @@ class DeviceSearchActivity : AppCompatActivity() {
 
         deviceStatus = findViewById(R.id.deviceStatus)
         connectButton = findViewById(R.id.connectButton)
+        tempNavigateButton = findViewById(R.id.tempNavigateButton) // 임시 버튼 초기화
+
+        // 임시 버튼 클릭 이벤트 추가
+        tempNavigateButton.setOnClickListener {
+            val intent = Intent(this, DashboardActivity::class.java)
+            startActivity(intent)
+        }
+
 
         // 처음에는 버튼을 비활성화
         connectButton.isEnabled = false
+
 
         // UDP 서버에 연결 상태를 확인하여 버튼 활성화
         checkUDPConnection()
