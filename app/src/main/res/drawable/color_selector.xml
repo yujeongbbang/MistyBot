@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 선택된 상태일 때 색상 -->
+    <item android:color="@color/colorPrimary" android:state_checked="true" />
+    <!-- 비활성화된 상태일 때 색상 -->
+    <item android:color="@android:color/darker_gray" android:state_enabled="false" />
+    <!-- 기본 색상 -->
+    <item android:color="@android:color/black" />
+</selector>

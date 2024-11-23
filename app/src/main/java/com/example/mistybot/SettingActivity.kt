@@ -1,9 +1,8 @@
 package com.example.mistybot
 
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,30 +14,64 @@ import java.net.InetAddress
 
 class SettingActivity : AppCompatActivity() {
 
-    // 습도 값을 입력할 EditText와 저장 버튼 변수 선언
+    private lateinit var radioGroup: RadioGroup
+    private lateinit var autoModeButton: RadioButton
+    private lateinit var customModeButton: RadioButton
     private lateinit var humidityInput: EditText
+    private lateinit var humidityInputLayout: LinearLayout
     private lateinit var saveButton: Button
-    private val turtleBotPort = 8000  // TurtleBot의 포트 번호
+
+    private val turtleBotPort = 8000 // TurtleBot의 포트 번호
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_setting)
 
-        // 뷰 초기화 (레이아웃의 EditText와 Button 연결)
+        // UI 요소 초기화
+        radioGroup = findViewById(R.id.radioGroup)
+        autoModeButton = findViewById(R.id.autoModeButton)
+        customModeButton = findViewById(R.id.customModeButton)
         humidityInput = findViewById(R.id.humidityInput)
+        humidityInputLayout = findViewById(R.id.linearLayout2)
         saveButton = findViewById(R.id.saveButton)
 
-        // 저장 버튼 클릭 시 습도 값 전송 로직 실행
-        saveButton.setOnClickListener {
-            val humidity = humidityInput.text.toString()  // 입력된 습도 값 가져오기
+        // 초기 상태 설정
+        autoModeButton.isChecked = true
+        humidityInputLayout.visibility = View.GONE // 기본으로 사용자 적정 습도 입력 숨김
 
-            // 입력된 값이 있는지 확인
-            if (humidity.isNotEmpty()) {
-                // 습도 값이 입력되어 있으면 TurtleBot으로 전송
-                sendHumidityToTurtleBot(humidity)
+        // RadioGroup 체크 상태 변경 리스너
+        radioGroup.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.autoModeButton -> {
+                    humidityInputLayout.visibility = View.GONE // AUTO 모드 시 입력 필드 숨김
+                }
+                R.id.customModeButton -> {
+                    humidityInputLayout.visibility = View.VISIBLE // 사용자 적정 모드 시 입력 필드 보이기
+                }
+            }
+        }
+
+        // 저장 버튼 동작
+        saveButton.setOnClickListener {
+            val selectedMode = if (autoModeButton.isChecked) "AUTO 모드" else "사용자 적정 모드"
+
+            // 사용자 적정 모드일 때 습도 값 가져오기
+            val humidityValue = if (customModeButton.isChecked) {
+                humidityInput.text.toString()
             } else {
-                // 습도 값이 비어 있을 경우 사용자에게 알림
+                "N/A"
+            }
+
+            if (customModeButton.isChecked && humidityValue.isEmpty()) {
                 Toast.makeText(this, "습도 값을 입력해 주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "$selectedMode 선택됨. 적정 습도: $humidityValue", Toast.LENGTH_SHORT)
+                    .show()
+
+                // 사용자 적정 모드일 경우 습도 값 전송
+                if (customModeButton.isChecked) {
+                    sendHumidityToTurtleBot(humidityValue)
+                }
             }
         }
     }
@@ -47,9 +80,12 @@ class SettingActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             var socket: DatagramSocket? = null
             try {
-                // 습도 값을 정수로 변환
+                // 현재 선택된 모드에 따라 "auto" 또는 "manual" 설정
+                val mode = if (autoModeButton.isChecked) "auto" else "manual"
+
+                // 모드와 습도 값을 조합하여 메시지 생성 (형식: "mode:value")
                 val humidityValue = humidity.toIntOrNull() ?: 0
-                val message = humidityValue.toString().toByteArray()  // 정수 값을 바이트 배열로 변환
+                val message = "$mode:$humidityValue".toByteArray()
 
                 // 서버와 라즈베리파이 IP 주소 설정
                 val serverAddr = InetAddress.getByName("192.168.134.106") // 서버 IP
@@ -58,22 +94,21 @@ class SettingActivity : AppCompatActivity() {
                 // 지정한 포트 번호로 UDP 소켓 생성
                 socket = DatagramSocket()
 
-                // 서버 IP로 습도 값 전송
-                val sendPacketServer =
-                    DatagramPacket(message, message.size, serverAddr, turtleBotPort)
-                socket.send(sendPacketServer)  // 데이터 전송
+                // 서버 IP로 메시지 전송
+                val sendPacketServer = DatagramPacket(message, message.size, serverAddr, turtleBotPort)
+                socket.send(sendPacketServer)
 
-                // 라즈베리파이 IP로 습도 값 전송
+                // 라즈베리파이 IP로 메시지 전송
                 val sendPacketRaspberryPi =
                     DatagramPacket(message, message.size, raspberryPiAddr, turtleBotPort)
-                socket.send(sendPacketRaspberryPi)  // 데이터 전송
+                socket.send(sendPacketRaspberryPi)
 
                 // TurtleBot으로부터의 응답 수신
                 val receiveData = ByteArray(1024)
                 val receivePacket = DatagramPacket(receiveData, receiveData.size)
-                socket.receive(receivePacket)  // 응답 수신
+                socket.receive(receivePacket)
 
-                val response = String(receivePacket.data, 0, receivePacket.length).trim()  // 응답 메시지 변환
+                val response = String(receivePacket.data, 0, receivePacket.length).trim()
 
                 // 메인 스레드에서 응답 메시지 UI에 표시
                 withContext(Dispatchers.Main) {
@@ -92,4 +127,5 @@ class SettingActivity : AppCompatActivity() {
             }
         }
     }
+
 }
