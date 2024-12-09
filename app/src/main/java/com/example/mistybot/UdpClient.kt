@@ -8,7 +8,7 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 
 object UdpClient {
-    private const val SERVER_IP = "192.168.134.106"
+    private const val SERVER_IP = "192.168.212.106"
     private const val SERVER_PORT = 8080
 
     private var socket: DatagramSocket? = null

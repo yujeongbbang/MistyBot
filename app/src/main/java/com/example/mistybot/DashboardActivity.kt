@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
@@ -20,8 +19,9 @@ import java.net.InetAddress
 class DashboardActivity : AppCompatActivity() {
 
     companion object {
-        private const val RASPBERRY_PI_IP = "192.168.134.109"  // 라즈베리파이 IP 주소
-        private const val RASPBERRY_PI_PORT = 8081  // 라즈베리파이 포트
+        private const val RASPBERRY_PI_IP = "192.168.212.109" // 라즈베리파이 IP 주소
+        private const val RASPBERRY_PI_PORT = 8081 // 라즈베리파이 포트
+        private const val WATER_SENSOR_PORT = 5006 // 수위 센서 데이터 포트
     }
 
     private lateinit var mapImageView: ImageView
@@ -30,7 +30,6 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var batteryValue: TextView
     private lateinit var settingsIcon: ImageView
     private lateinit var waterLevelStatus: TextView
-    private lateinit var waterQualityStatus: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +42,7 @@ class DashboardActivity : AppCompatActivity() {
         batteryValue = findViewById(R.id.batteryValue)
         settingsIcon = findViewById(R.id.settingsIcon)
         waterLevelStatus = findViewById(R.id.waterLevelStatus)
-        waterQualityStatus = findViewById(R.id.waterQualityStatus)
+        // waterQualityStatus = findViewById(R.id.waterQualityStatus)
 
         // settingsIcon 클릭 시 SettingActivity로 이동
         settingsIcon.setOnClickListener {
@@ -51,37 +50,10 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // 물의 양 상태
-        val waterLevel = "충분" // 실제 상태를 가져오는 로직 추가
-        if (waterLevel == "충분") {
-            waterLevelStatus.text = "충분"
-            waterLevelStatus.setTextColor(ContextCompat.getColor(this, R.color.waterLevelSufficient))
-        } else {
-            waterLevelStatus.text = "부족"
-            waterLevelStatus.setTextColor(ContextCompat.getColor(this, R.color.waterLevelInsufficient))
-        }
-
-        // 수질 상태
-        val waterQuality = "좋음" // 실제 상태를 가져오는 로직 추가
-        when (waterQuality) {
-            "좋음" -> {
-                waterQualityStatus.text = "좋음"
-                waterQualityStatus.setTextColor(ContextCompat.getColor(this, R.color.waterQualityGood))
-            }
-            "양호" -> {
-                waterQualityStatus.text = "양호"
-                waterQualityStatus.setTextColor(ContextCompat.getColor(this, R.color.waterQualityFair))
-            }
-            "나쁨" -> {
-                waterQualityStatus.text = "나쁨"
-                waterQualityStatus.setTextColor(ContextCompat.getColor(this, R.color.waterQualityPoor))
-            }
-        }
-
         // 데이터 수신 시작
         receiveImageData()
         receiveSensorData()
-        receiveWaterQualityData()
+        receiveWaterLevelData()
     }
 
     private fun receiveImageData() {
@@ -107,7 +79,6 @@ class DashboardActivity : AppCompatActivity() {
             }
         }
     }
-
 
     private fun receiveSensorData() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -139,48 +110,54 @@ class DashboardActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@DashboardActivity, "서버 연결이 끊어졌습니다", Toast.LENGTH_SHORT)
-                        .show()
+                    // Toast.makeText(this@DashboardActivity, "서버 연결이 끊어졌습니다", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
-    // 수위 및 수질 데이터 수신
-    private fun receiveWaterQualityData() {
+    private fun receiveWaterLevelData() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val socket = DatagramSocket(RASPBERRY_PI_PORT)
+                val socket = DatagramSocket(WATER_SENSOR_PORT)
                 val buffer = ByteArray(1024)
-                val packet = DatagramPacket(
-                    buffer,
-                    buffer.size,
-                    InetAddress.getByName(RASPBERRY_PI_IP),
-                    RASPBERRY_PI_PORT
-                )
+                val packet = DatagramPacket(buffer, buffer.size)
 
                 while (true) {
                     socket.receive(packet)
-                    val jsonData = String(packet.data, 0, packet.length).trim()
-
-                    val jsonObject = JSONObject(jsonData)
-                    val waterLevel = jsonObject.getString("water_level")
-                    val waterQuality = jsonObject.getString("water_quality")
+                    val message = String(packet.data, 0, packet.length).trim()
 
                     withContext(Dispatchers.Main) {
-                        waterLevelStatus.text = "$waterLevel%"
-                        waterQualityStatus.text = "$waterQuality%"
+                        updateWaterStatus(message)
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@DashboardActivity, "수위/수질 데이터 수신 오류", Toast.LENGTH_SHORT)
-                        .show()
                 }
             }
         }
     }
+
+    private fun updateWaterStatus(message: String) {
+        when (message) {
+            "Water: Full" -> {
+                waterLevelStatus.text = "물이 충분합니다."
+                waterLevelStatus.setTextColor(ContextCompat.getColor(this, R.color.waterLevelSufficient))
+            }
+            "Water: Low" -> {
+                waterLevelStatus.text = "물이 부족합니다."
+                waterLevelStatus.setTextColor(ContextCompat.getColor(this, R.color.waterLevelInsufficient))
+            }
+            else -> {
+                waterLevelStatus.text = "알 수 없는 상태: $message"
+                waterLevelStatus.setTextColor(ContextCompat.getColor(this, R.color.unknownStatus))
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // 리소스 해제
+    }
 }
-
-

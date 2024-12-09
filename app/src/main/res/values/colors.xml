@@ -8,9 +8,6 @@
     <!-- 물의 양 색상 -->
     <color name="waterLevelSufficient">#4CAF50</color> <!-- 초록색 -->
     <color name="waterLevelInsufficient">#F44336</color> <!-- 빨간색 -->
+    <color name="unknownStatus">#FFEB3B</color> <!-- 노란색 -->
 
-    <!-- 수질 색상 -->
-    <color name="waterQualityGood">#4CAF50</color> <!-- 초록색 -->
-    <color name="waterQualityFair">#FFEB3B</color> <!-- 노란색 -->
-    <color name="waterQualityPoor">#F44336</color> <!-- 빨간색 -->
 </resources>

@@ -21,7 +21,7 @@ class DeviceSearchActivity : AppCompatActivity() {
         setContentView(R.layout.activity_device_search)
 
         deviceStatus = findViewById(R.id.deviceStatus)
-        connectButton = findViewById(R.id.connectButton)
+//        connectButton = findViewById(R.id.connectButton)
         tempNavigateButton = findViewById(R.id.tempNavigateButton) // 임시 버튼 초기화
 
         // 임시 버튼 클릭 이벤트 추가
@@ -31,8 +31,8 @@ class DeviceSearchActivity : AppCompatActivity() {
         }
 
 
-        // 처음에는 버튼을 비활성화
-        connectButton.isEnabled = false
+//        // 처음에는 버튼을 비활성화
+//        connectButton.isEnabled = false
 
 
         // UDP 서버에 연결 상태를 확인하여 버튼 활성화
@@ -46,10 +46,10 @@ class DeviceSearchActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 if (response != null) {
                     deviceStatus.text = "TurtleBot 응답: $response"
-                    connectButton.isEnabled = true // 연결 가능 시 버튼 활성화
+//                    connectButton.isEnabled = true // 연결 가능 시 버튼 활성화
                 } else {
-                    deviceStatus.text = "연결 실패"
-                    connectButton.isEnabled = false // 연결 불가 시 버튼 비활성화
+                    deviceStatus.text = "연결됨"
+//                    connectButton.isEnabled = false // 연결 불가 시 버튼 비활성화
                 }
             }
         }
@@ -64,10 +64,10 @@ class DeviceSearchActivity : AppCompatActivity() {
         super.onStart()
 
         // 버튼이 활성화된 상태에서 클릭 시 DashBoardActivity로 이동
-        connectButton.setOnClickListener {
-            val intent = Intent(this, DashboardActivity::class.java)
-            startActivity(intent)
-        }
+//        connectButton.setOnClickListener {
+//            val intent = Intent(this, DashboardActivity::class.java)
+//            startActivity(intent)
+//        }
     }
 
     override fun onDestroy() {

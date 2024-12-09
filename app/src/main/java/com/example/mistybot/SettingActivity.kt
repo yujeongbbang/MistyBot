@@ -21,7 +21,7 @@ class SettingActivity : AppCompatActivity() {
     private lateinit var humidityInputLayout: LinearLayout
     private lateinit var saveButton: Button
 
-    private val turtleBotPort = 8000 // TurtleBot의 포트 번호
+    private val turtleBotPort = 5005 // TurtleBot의 포트 번호
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +65,7 @@ class SettingActivity : AppCompatActivity() {
             if (customModeButton.isChecked && humidityValue.isEmpty()) {
                 Toast.makeText(this, "습도 값을 입력해 주세요.", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "$selectedMode 선택됨. 적정 습도: $humidityValue", Toast.LENGTH_SHORT)
+                Toast.makeText(this, "$selectedMode 선택됨", Toast.LENGTH_SHORT)
                     .show()
 
                 // 사용자 적정 모드일 경우 습도 값 전송
@@ -87,20 +87,28 @@ class SettingActivity : AppCompatActivity() {
                 val humidityValue = humidity.toIntOrNull() ?: 0
                 val message = "$mode:$humidityValue".toByteArray()
 
-                // 서버와 라즈베리파이 IP 주소 설정
-                val serverAddr = InetAddress.getByName("192.168.134.106") // 서버 IP
-                val raspberryPiAddr = InetAddress.getByName("192.168.134.109") // 라즈베리파이 IP
+                // 각 IP 주소와 포트를 설정
+                val pcAddr = InetAddress.getByName("192.168.212.106") // PC IP
+                val turtleBotAddr = InetAddress.getByName("192.168.212.109") // TurtleBot IP
+                val raspberryPiAddr = InetAddress.getByName("192.168.212.250") // 라즈베리파이 IP
+
+                val pcPort = 5008
+                val turtleBotPort = 5009
+                val raspberryPiPort = 5010
 
                 // 지정한 포트 번호로 UDP 소켓 생성
                 socket = DatagramSocket()
 
-                // 서버 IP로 메시지 전송
-                val sendPacketServer = DatagramPacket(message, message.size, serverAddr, turtleBotPort)
-                socket.send(sendPacketServer)
+                // PC IP로 메시지 전송
+                val sendPacketPC = DatagramPacket(message, message.size, pcAddr, pcPort)
+                socket.send(sendPacketPC)
+
+                // TurtleBot IP로 메시지 전송
+                val sendPacketTurtleBot = DatagramPacket(message, message.size, turtleBotAddr, turtleBotPort)
+                socket.send(sendPacketTurtleBot)
 
                 // 라즈베리파이 IP로 메시지 전송
-                val sendPacketRaspberryPi =
-                    DatagramPacket(message, message.size, raspberryPiAddr, turtleBotPort)
+                val sendPacketRaspberryPi = DatagramPacket(message, message.size, raspberryPiAddr, raspberryPiPort)
                 socket.send(sendPacketRaspberryPi)
 
                 // TurtleBot으로부터의 응답 수신
@@ -127,5 +135,6 @@ class SettingActivity : AppCompatActivity() {
             }
         }
     }
+
 
 }

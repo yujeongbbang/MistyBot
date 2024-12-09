@@ -191,47 +191,47 @@
                 android:id="@+id/waterLevelStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="부족"
-                android:textColor="@color/waterLevelInsufficient"
+                android:text=""
+                android:textColor="@color/waterLevelSufficient"
                 android:layout_marginTop="10dp"
                 android:textSize="20sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- 수질 상태 카드 -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="16dp">
+<!--        &lt;!&ndash; 수질 상태 카드 &ndash;&gt;-->
+<!--        <LinearLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            android:gravity="center"-->
+<!--            android:orientation="vertical"-->
+<!--            android:padding="16dp">-->
 
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/waterwarning"
-                />
+<!--            <ImageView-->
+<!--                android:layout_width="40dp"-->
+<!--                android:layout_height="40dp"-->
+<!--                android:src="@drawable/waterwarning"-->
+<!--                />-->
 
-            <TextView
-                android:id="@+id/waterQualityTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="수질"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
+<!--            <TextView-->
+<!--                android:id="@+id/waterQualityTitle"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="20dp"-->
+<!--                android:text="수질"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:textSize="16sp" />-->
 
-            <TextView
-                android:id="@+id/waterQualityStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="좋음"
-                android:textColor="@color/waterQualityGood"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+<!--            <TextView-->
+<!--                android:id="@+id/waterQualityStatus"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:text="좋음"-->
+<!--                android:textColor="@color/waterQualityGood"-->
+<!--                android:textSize="20sp"-->
+<!--                android:textStyle="bold" />-->
+<!--        </LinearLayout>-->
 
     </LinearLayout>
 
